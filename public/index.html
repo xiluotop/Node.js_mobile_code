@@ -74,7 +74,7 @@
                 }
 
                 $.ajax({
-                    url: 'http://localhost:2333/getmsg',
+                    url: '/getmsg',
                     data: {
                         phonenumber: $('#phonenumber').val().trim()
                     },
@@ -106,7 +106,7 @@
                 }
                 $.ajax({
                     type: 'post',
-                    url: 'http://localhost:2333/getaccess',
+                    url: '/getaccess',
                     data: {
                         phone: $('#phonenumber').val().trim(),
                         code: $('#security').val().trim() * 1,

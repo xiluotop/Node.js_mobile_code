@@ -12,6 +12,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "express-session": "^1.17.0",
-    "qcloudsms_js": "^0.1.1"
+    "qcloudsms_js": "^0.1.1",
+    "tencentcloud-sdk-nodejs": "^3.0.95"
   }
 }

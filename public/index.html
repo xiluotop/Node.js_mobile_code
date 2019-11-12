@@ -51,7 +51,8 @@
         <button id="submit">进行验证</button>
         </<span>
 
-        <script src="./jquery-1.12.4.js"></script>
+        <script src="./js/jquery-1.12.4.js"></script>
+        <script src="./js/TCaptcha.js"></script>
         <script>
             $('#phonenumber').on('input', function () {
                 var number = $(this).val();
@@ -73,30 +74,56 @@
                     return;
                 }
 
-                $.ajax({
-                    url: '/getmsg',
-                    data: {
-                        phonenumber: $('#phonenumber').val().trim()
-                    },
-                    success: (res) => {
-                        if (res.code === 200) {
-                            $(this).attr('disabled', true).text("60秒后可重新获取");
-                            time = 60;
-                            that = this;
-                            setTimeout(function () {
-                                time--;
-                                if (time >= 0) {
-                                    $(that).text(time + "秒后可重新获取");
-                                    setTimeout(arguments.callee, 1000);
-                                } else {
-                                    $(that).attr('disabled', false).text("获取验证码");
-                                }
-                            }, 1000);
-                        } else {
-                            alert(res.msg);
-                        }
+                // 直接生成验证码并显示
+                new TencentCaptcha('2058122041', function (capres) {
+                    // 验证成功
+                    if (capres.ret === 0) {
+                        // 向服务器端发送验证请求
+                        $.ajax({
+                            type: 'post',
+                            url: '/getcap',
+                            data: capres,
+                        }).then((res) => {
+                            if (res.state === 200) {
+                                // 验证码通过验证，获取手机验证码请求
+                                $.ajax({
+                                    url: '/mobile/getcode',
+                                    data: {
+                                        phonenumber: $('#phonenumber').val().trim()
+                                    },
+                                    success: (coderes) => {
+                                        if (coderes.code === 200) {
+                                            $('#getCode').attr('disabled', true)
+                                                .text(
+                                                    "60秒后可重新获取");
+                                            time = 60;
+                                            setTimeout(function () {
+                                                time--;
+                                                if (time >= 0) {
+                                                    $('#getCode').text(
+                                                        time +
+                                                        "秒后可重新获取");
+                                                    setTimeout(arguments
+                                                        .callee, 1000);
+                                                } else {
+                                                    $('#getCode').attr(
+                                                        'disabled',
+                                                        false).text(
+                                                        "获取验证码");
+                                                }
+                                            }, 1000);
+                                        } else {
+                                            alert(coderes.msg);
+                                        }
+                                    }
+                                })
+                            } else {
+                                // 通过验证失败
+                                alert('获取验证码失败，请稍后再试！！！')
+                            }
+                        })
                     }
-                })
+                }).show();
             })
 
             $('#submit').click(function () {
@@ -106,7 +133,7 @@
                 }
                 $.ajax({
                     type: 'post',
-                    url: '/getaccess',
+                    url: '/mobile/getaccess',
                     data: {
                         phone: $('#phonenumber').val().trim(),
                         code: $('#security').val().trim() * 1,
